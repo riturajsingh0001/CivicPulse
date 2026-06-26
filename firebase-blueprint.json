@@ -1,0 +1,98 @@
+{
+  "collections": [
+    {
+      "name": "users",
+      "description": "User profiles. Supports role-based access control.",
+      "securityRules": [
+        {
+          "role": "owner",
+          "access": ["read", "write"],
+          "condition": "request.auth.uid == documentId"
+        },
+        {
+          "role": "admin",
+          "access": ["read", "write"],
+          "condition": "request.auth.token.role == 'admin'"
+        }
+      ],
+      "fields": [
+        {
+          "name": "role",
+          "type": "string",
+          "description": "Role of the user (e.g. 'citizen', 'admin')."
+        },
+        {
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "trustScore",
+          "type": "number",
+          "description": "Trust score of the citizen."
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
+      "name": "reports",
+      "description": "Civic intelligence reports submitted by users.",
+      "securityRules": [
+        {
+          "role": "author",
+          "access": ["create", "read", "update"],
+          "condition": "request.auth.uid == data.userId"
+        },
+        {
+          "role": "admin",
+          "access": ["read", "write"],
+          "condition": "request.auth.token.role == 'admin' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'"
+        },
+        {
+          "role": "public",
+          "access": ["read"],
+          "condition": "true",
+          "description": "Anyone can read reports to allow community verification."
+        }
+      ],
+      "fields": [
+        {
+          "name": "userId",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp"
+        },
+        {
+          "name": "analysis",
+          "type": "map"
+        },
+        {
+          "name": "coordinates",
+          "type": "map"
+        },
+        {
+          "name": "verifications",
+          "type": "number",
+          "description": "Number of verifications by the community"
+        },
+        {
+          "name": "verifiedBy",
+          "type": "array",
+          "description": "Array of userIds who verified this report"
+        }
+      ]
+    }
+  ]
+}
